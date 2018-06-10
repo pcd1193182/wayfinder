@@ -13,7 +13,7 @@ import networkx as nx
 import urllib.request
 from enum import Enum
 
-from config import UNIVERSE_JSON
+import config
 import siggy
 
 class RouteType(Enum):
@@ -53,18 +53,20 @@ def load_universe(map_file, chainmap_id):
         G.add_edge(wormhole["sourceSolarSystem"]["id"], wormhole["destinationSolarSystem"]["id"],
                    eol=eol, mass = wormhole["wormholeMass"])
 
-    # Load siggy data
-    data = json.loads(siggy.get_chain(chainmap_id))
-    for wormhole in data["wormholes"]:
-        # Note that we can't support crit detection from siggy until mass status is added to the API.
-        # We can however treat frigate holes as critical, as an approximation
-        mass = "stable"
-        if wormholes["frigate_sized"]:
-            crit = "critical"
-        eol = False
-        if wormhole["eol"] == 1:
-            eol = True
-        G.add_edge(wormhole["from_system_id"], wormhole["to_system_id"], eol = eol, mass = mass)
+    # Load siggy data if we have siggy configured
+    if len(config.SIGGY_KEYID) > 0:
+        data = json.loads(siggy.get_chain(chainmap_id))
+        for wormhole in data["wormholes"]:
+            # Note that we can't support crit detection from siggy until mass status is added to the API.
+            # We can however treat frigate holes as critical, as an approximation
+            mass = "stable"
+            if wormholes["frigate_sized"]:
+                crit = "critical"
+            eol = False
+            if wormhole["eol"] == 1:
+                eol = True
+            G.add_edge(wormhole["from_system_id"], wormhole["to_system_id"], eol = eol, mass = mass)
+    
     return (G, db)
 
 def modify_graph(G, avoids, type, allowEol, allowCrit):
@@ -182,7 +184,7 @@ if __name__ == "__main__":
     if type == RouteType.UNDEF:
         type = RouteType.SHORTEST
 
-        (G, db) = load_universe(UNIVERSE_JSON, chainmap_id)
+        (G, db) = load_universe(config.UNIVERSE_JSON, chainmap_id)
     src = name_to_id(db, args[0])
     dest = name_to_id(db, args[1])
     avoids = list(map(lambda x : name_to_id(db, x), args[2:]))
