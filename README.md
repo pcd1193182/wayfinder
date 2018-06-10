@@ -20,10 +20,10 @@ The first argument is the starting location; the second is the destination. Afte
 ### -h
 Presents the usage information
 
-### -c --allow-crit
+### -c, --allow-crit
 Allows the usage of crit wormholes in the route calculation. By default these wormholes are ignored.
 
-### -e --allow-eol
+### -e, --allow-eol
 Allows the usage of EOL wormholes in the route calculation. By default these wormholes are ignored.
 
 ### --shortest, --safest, --insecure
