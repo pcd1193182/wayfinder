@@ -167,7 +167,7 @@ if __name__ == "__main__":
             type = RouteType.INSECURE
         elif o == "-e" or o == "--allow-eol":
             allowEol = True
-        elif o == "-e" or o == "--allow-crit":
+        elif o == "-c" or o == "--allow-crit":
             allowCrit = True
         elif o == "--chain":
             chainmap_id = a;
