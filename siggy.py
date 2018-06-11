@@ -25,7 +25,7 @@ def siggy_request(verb, path, data = None, timestamp = datetime.datetime.now(pyt
         data=data,
         headers =
         {
-            'User-Agent': 'RouteFinder v0.1b',
+            'User-Agent': 'RouteFinder v0.2b',
             'Authorization': 'siggy-HMAC-SHA256 Credential=' + config.SIGGY_KEYID + ":" + signature,
             'x-siggy-date': timestamp.isoformat()
         }

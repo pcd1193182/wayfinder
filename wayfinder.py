@@ -37,7 +37,7 @@ def load_universe(map_file, chainmap_id):
     request = req = urllib.request.Request(
             "https://www.eve-scout.com/api/wormholes",
             data=None,
-            headers={'User-Agent': 'RouteFinder v0.1b'}
+            headers={'User-Agent': 'RouteFinder v0.2b'}
         )
     contents = urllib.request.urlopen(req).read().decode('utf-8')
     data = json.loads(contents)
