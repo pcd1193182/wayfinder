@@ -60,7 +60,7 @@ def load_universe(map_file, chainmap_id):
             # Note that we can't support crit detection from siggy until mass status is added to the API.
             # We can however treat frigate holes as critical, as an approximation
             mass = "stable"
-            if wormholes["frigate_sized"]:
+            if wormhole["frigate_sized"]:
                 crit = "critical"
             eol = False
             if wormhole["eol"] == 1:
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     allowEol = False
     allowCrit = False
     type = RouteType.UNDEF
-    chainmap_id = 1
+    chainmap_id = config.SIGGY_DEFAULT_CHAINMAP
     for o,a in opts:
         if o == "-h":
             usage()
@@ -184,16 +184,21 @@ if __name__ == "__main__":
     if type == RouteType.UNDEF:
         type = RouteType.SHORTEST
 
-        (G, db) = load_universe(config.UNIVERSE_JSON, chainmap_id)
+    (G, db) = load_universe(config.UNIVERSE_JSON, chainmap_id)
     src = name_to_id(db, args[0])
     dest = name_to_id(db, args[1])
     avoids = list(map(lambda x : name_to_id(db, x), args[2:]))
-    desc = "Generating %s route from %s to %s" % (type, args[0], args[1])
+    desc = "Generating %s route from %s to %s, %s eol connections and %s crit holes" % (type,
+        args[0], args[1], "allowing" if allowEol else "ignoring", "allowing" if allowCrit else "ignoring")
     if len(avoids) > 0:
         desc += ", avoiding " + ", ".join(args[2:])
     print(desc)
     G = modify_graph(G, avoids, type, allowEol, allowCrit)
-    route = nx.shortest_path(G, src, dest, "weight")
+    try:
+        route = nx.shortest_path(G, src, dest, "weight")
+    except nx.exception.NetworkXNoPath as e:
+        print("No path to " + args[0] + " from " + args[1])
+        exit(5)
     i = 0
     for id in route:
         system = db[id]

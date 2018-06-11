@@ -10,27 +10,34 @@ import hmac
 import hashlib
 import urllib
 import config
+import pytz
+
 
 def siggy_sign(verb, path, timestamp = datetime.datetime.now(), content_type = "", content_hash = ""):
     message = verb + "\n" + path + "\n" + timestamp.isoformat() + "\n" + content_type + "\n" + content_hash
     hm = hmac.new(config.SIGGY_SECRET, msg=bytes(message, 'utf-8'), digestmod=hashlib.sha256).digest()
     return base64.standard_b64encode(hm).decode('utf-8')
 
-def siggy_request(verb, path, data = None, timestamp = datetime.datetime.now(), content_type = "", content_hash = ""):
+def siggy_request(verb, path, data = None, timestamp = datetime.datetime.now(pytz.utc), content_type = "", content_hash = ""):
     signature = siggy_sign(verb, path, timestamp, content_type, content_hash)
     req = urllib.request.Request(
-        "https://siggy.borkedlabs.com/api" + path,
+        "https://siggy.borkedlabs.com/" + path,
         data=data,
         headers =
         {
             'User-Agent': 'RouteFinder v0.1b',
-            'Authorization': 'siggy-HMAC-SHA256 Credential=' + config.SIGGY_KEYID + ":" + signature
+            'Authorization': 'siggy-HMAC-SHA256 Credential=' + config.SIGGY_KEYID + ":" + signature,
+            'x-siggy-date': timestamp.isoformat()
         }
     )
-    return urllib.request.urlopen(req).read().decode('utf-8')
+    try:
+        return urllib.request.urlopen(req).read().decode('utf-8')
+    except urllib.error.HTTPError as e:
+        print(str(e.code) + " " + e.reason)
+        exit(4)
 
 def get_chain(chainmap_id):
-    return siggy_request("GET", "/v1/chainmaps/" + str(chainmap_id))
+    return siggy_request("GET", "api/v1/chainmaps/" + str(chainmap_id))
 
 def get_chainmaps():
-    return siggy_request("GET", "/v1/chainmaps")
+    return siggy_request("GET", "api/v1/chainmaps")
