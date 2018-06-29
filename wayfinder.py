@@ -69,7 +69,7 @@ def load_universe(map_file, chainmap_id):
     
     return (G, db)
 
-def modify_graph(G, avoids, type, allowEol, allowCrit):
+def modify_graph(G, avoids, type, allowEol, allowCrit, db):
     G.remove_nodes_from(avoids)
     if type == RouteType.SAFEST:
         for edge in G.edges():
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     if len(avoids) > 0:
         desc += ", avoiding " + ", ".join(args[2:])
     print(desc)
-    G = modify_graph(G, avoids, type, allowEol, allowCrit)
+    G = modify_graph(G, avoids, type, allowEol, allowCrit, db)
     try:
         route = nx.shortest_path(G, src, dest, "weight")
     except nx.exception.NetworkXNoPath as e:

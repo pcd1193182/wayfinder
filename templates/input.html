@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <body>
+
+        <form id='my-form'>
+
+            <div class='choice'><input type="radio" name="pathing" value="shortest" checked> Shortest</div>
+            <div class='choice'><input type="radio" name="pathing" value="safest"> Safest</div>
+            <div class='choice'><input type="radio" name="pathing" value="insecure"> Insecure</div>
+            <div class='choice'>Start: <input type="text" name="start"></div>
+            <div class='choice'>End: <input type="text" name="end"></div>
+            <div class='choice'>Aviod (comma separated): <input type="text" name="avoid"></div>
+            <div class='choice'><input type="checkbox" name="crit"> Allow crit holes</div>
+            <div class='choice'><input type="checkbox" name="eol"> Allow EOL holes</div>
+            <div class='choice'><input type="submit" value="Submit"></div>
+
+        </form>
+
+        <table id="table" border="1">
+        </table>
+
+    </body>
+</html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+<script>
+
+    // needed to create the proper request header
+	$.ajaxSetup({
+	  contentType: "application/json"
+	});
+
+    function processResponse(data) {
+        console.log(data);
+
+        newTable = document.createElement("table");
+        newTable.id = "table";
+        newTable.border = "1";
+
+        oldTable = document.getElementById("table");
+
+        oldTable.parentNode.replaceChild(newTable, oldTable);
+
+        buildHtmlTable("#table", data);
+    }
+
+    function processForm(e) {
+        e.preventDefault();
+
+        var params = {
+            pathing: $("input[name='pathing']:checked").val(),
+            start: $("input[name='start']").val(),
+            end: $("input[name='end']").val(),
+            avoid: $("input[name='avoid']").val().split(","),
+            crit: document.getElementsByName("crit")[0].checked,
+            eol: document.getElementsByName("eol")[0].checked
+        };
+
+        if(params['start'] === "" || params['end'] === "")
+        {
+            alert("Must define a starting and ending location");
+            return false;
+        }
+
+        console.log(params);
+
+        $.post("receiver", JSON.stringify(params), processResponse);
+
+        return false;
+    }
+
+    window.onload = function() {
+        $('#my-form').submit(processForm);
+    }
+
+    // Builds the HTML Table out of myList.
+    function buildHtmlTable(selector, json) {
+      var columns = addAllColumnHeaders(json, selector);
+
+      for (var i = 0; i < json.length; i++) {
+        var row$ = $('<tr/>');
+        for (var colIndex = 0; colIndex < columns.length; colIndex++) {
+          var cellValue = json[i][columns[colIndex]];
+          if (cellValue == null) cellValue = "";
+          row$.append($('<td/>').html(cellValue));
+        }
+        $(selector).append(row$);
+      }
+    }
+
+    // Adds a header row to the table and returns the set of columns.
+    // Need to do union of keys from all records as some records may not contain
+    // all records.
+    function addAllColumnHeaders(myList, selector) {
+      var columnSet = [];
+      var headerTr$ = $('<tr/>');
+
+      for (var i = 0; i < myList.length; i++) {
+        var rowHash = myList[i];
+        for (var key in rowHash) {
+          if ($.inArray(key, columnSet) == -1) {
+            columnSet.push(key);
+            headerTr$.append($('<th/>').html(key));
+          }
+        }
+      }
+      $(selector).append(headerTr$);
+
+      return columnSet;
+    }
+</script>
