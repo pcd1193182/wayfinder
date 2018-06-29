@@ -20,6 +20,16 @@ Example usage:
 
 The first argument is the starting location; the second is the destination. After that, a list of systems to avoid my be provided; if the destination cannot be reached without travelling through them, no route will be given.  Several arguments are available:
 
+There is now a web component, to start up the server, simply run web.py:
+`./web.py`
+
+A basic webpage will be served to your hosting IP address, and can be accessed
+on the same machine by opening a browser and going to 0.0.0.0:5010. Other
+machines on the same network can access the page by going to your IP address at
+port 5000. For example, if your IP address is 1.2.3.4, the webpage could be
+accessed on another machine by opening a browser and going to 1.2.3.4:5010,
+assuming there are no firewalls in the way.
+
 ### -h
 Presents the usage information
 
